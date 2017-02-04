@@ -56,7 +56,7 @@ var cfg={
   vendor_fonts : { bld: vendorBuildPath + "/stylesheets/fonts" }, 
 
   apiUrl: { dev: "http://localhost:3000",
-            prd: "https://glacial-earth-69618.herokuapp.com"},
+            prd: "https://dwc-capstone-demo-production.herokuapp.com"},
 };
 
 //files within these paths will be served as root-level resources in this priority order
@@ -155,7 +155,7 @@ gulp.task("run", ["build", "browserSync"], function (){
 gulp.task("dist:assets", ["build"], function(){
   return gulp.src(cfg.root_html.src).pipe(debug())
     .pipe(useref({ searchPath: devResourcePath }))
-    .pipe(gulpif(["**/*constant.js"], replace(cfg.apiUrl.dev,cfg.apiUrl.prd))) //change URLs
+    .pipe(gulpif(["**/*.js"], replace(cfg.apiUrl.dev,cfg.apiUrl.prd))) //change URLs
     .pipe(gulpif(["**/*.js"], uglify()))  //minify JS
     .pipe(gulpif(["**/*.css"], cssMin())) //minify CSS
     .pipe(gulp.dest(distPath)).pipe(debug());
@@ -169,7 +169,7 @@ gulp.task("dist:fonts", function(){
 
 //build/copy over HTML resources into dist tree
 gulp.task("dist:html", function(){
-  return gulp.src(cfg.html.src).pipe(debug())
+  return gulp.src(cfg.html.src, {base: srcPath+"/javascripts"}).pipe(debug())
     .pipe(htmlMin({collapseWhitespace: true})) //minify HTML
     .pipe(gulp.dest(distPath)).pipe(debug());
 });
