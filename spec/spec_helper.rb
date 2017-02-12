@@ -15,8 +15,62 @@
 # The `.rspec` file also contains a few flags that are not defaults but that
 # users commonly want.
 #
+require 'mongoid-rspec'
+require 'capybara/rspec'
+require_relative 'support/database_cleaners.rb'
+require_relative 'support/api_helper.rb'
+
+browser=:chrome
+Capybara.register_driver :selenium do |app|
+  if browser == :chrome
+    if ENV['CHROMEDRIVER_BINARY_PATH']
+      #set CHROMEDRIVER_BINARY_PATH=c:\Program Files\chromedriver_win32\chromedriver.exe
+      Selenium::WebDriver::Chrome.driver_path=ENV['CHROMEDRIVER_BINARY_PATH']
+    end
+    Capybara::Selenium::Driver.new(app, :browser => :chrome)
+  else 
+    if ENV['FIREFOX_BINARY_PATH']
+      require 'selenium/webdriver'
+      #C:\Program Files (x86)\Mozilla Firefox\firefox.exe
+      #set FIREFOX_BINARY_PATH=c:\Program Files\Mozilla Firefox\firefox.exe
+      Selenium::WebDriver::Firefox::Binary.path=ENV['FIREFOX_BINARY_PATH']
+    end
+    Capybara::Selenium::Driver.new(app, :browser=>:firefox)
+  end
+end
+
+require 'capybara/poltergeist'
+# Set the default driver 
+Capybara.configure do |config|
+  config.default_driver = :rack_test
+  #used when :js=>true
+  config.javascript_driver = :poltergeist
+#  config.javascript_driver = :selenium
+end
+
+Capybara.register_driver :poltergeist do |app|
+  Capybara::Poltergeist::Driver.new( app,
+    phantomjs_logger: StringIO.new,
+#    logger: STDERR
+    )
+end
+
+if ENV["COVERAGE"] == "true"
+    require 'simplecov'
+    SimpleCov.start do
+      add_filter "/spec"
+      add_filter "/config"
+      add_group "cities", ["city"]
+      add_group "states", ["state"]
+    end
+end
+
+
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
+  config.include Mongoid::Matchers, :orm => :mongoid
+  config.include ApiHelper, :type=>:request
+
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.

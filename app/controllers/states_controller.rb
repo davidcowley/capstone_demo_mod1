@@ -1,6 +1,7 @@
 class StatesController < ApplicationController
   before_action :set_state, only: [:show, :update, :destroy]
-
+  wrap_parameters :state, include: ["name"]
+  
   def index
     @states = State.all
 
@@ -12,11 +13,11 @@ class StatesController < ApplicationController
   end
 
   def create
-    @state = State.new(state_params)
+   @state = State.new(state_params)
 
     if @state.save
       #render json: @state, status: :created, location: @state
-      render show, status: :created, location: @state
+      render :show, status: :created, location: @state
     else
       render json: @state.errors, status: :unprocessable_entity
     end
